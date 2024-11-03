@@ -13,6 +13,17 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
 
+from llama_index.core import VectorStoreIndex
+from llama_index.core.storage.docstore import SimpleDocumentStore
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core import SimpleDirectoryReader
+from llama_index.core import Settings
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.llms.huggingface import HuggingFaceLLM
+from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
+from llama_index.core.schema import Document
+
+
 # Load environment variables
 load_dotenv()
 
@@ -27,6 +38,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+HF_TOKEN = os.getenv("HUGGING_FACE_TOKEN")
 
 # Database setup
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -93,70 +105,58 @@ async def upload_pdf(file: UploadFile = File(...)):
     
     return {"file_name": pdf_metadata.file_name, "upload_date": pdf_metadata.upload_date}
 
-# Endpoint to ask questions
-# @app.post("/ask_question")
-# async def ask_question(file_name: str, question: str):
-#     # Load PDF content
-#     file_path = f"./uploads/{file_name}"
-    
-#     if not os.path.exists(file_path):
-#         raise HTTPException(status_code=404, detail="PDF not found")
-    
-#     # Extract text from PDF (you may use a more sophisticated method here)
-#     with open(file_path, "rb") as f:
-#         reader = PyPDF2.PdfReader(f)
-#         text = ""
-#         for page in reader.pages:
-#             text += page.extract_text() or ""
-
-#     # Here, you would implement your NLP processing using LangChain or LlamaIndex
-#     answer = process_question_with_nlp(text, question)  # Replace with actual NLP processing
-#     print(answer)
-
-#     return {"answer": answer, "file_name": file_name, "question": question}
-
 class AskQuestionRequest(BaseModel):
     file_name: str
     question: str
 
-# @app.post("/ask_question")
-# async def ask_question(request_data: AskQuestionRequest):
-#     file_name = request_data.file_name
-#     question = request_data.question
-#     # Your processing logic here
-#     return {"answer": "This is a dummy answer"}
-
-# def process_question_with_nlp(pdf_text, question):
-#     # Placeholder for actual NLP logic
-#     return f"This is a placeholder answer for the question: '{question}'"
-
-@app.post("/ask_question")
+# Endpoint to ask questions
+@app.post("/ask-question")
 async def ask_question(request_data: AskQuestionRequest):
     file_name = request_data.file_name
     question = request_data.question
-    
     # Load PDF content
     file_path = f"./uploads/{file_name}"
     
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="PDF not found")
     
-    # Extract text from PDF
+    # Extract text from PDF (you may use a more sophisticated method here)
     with open(file_path, "rb") as f:
         reader = PyPDF2.PdfReader(f)
         text = ""
         for page in reader.pages:
             text += page.extract_text() or ""
+    
+    
 
-    # NLP processing placeholder (integrate with LangChain or LlamaIndex)
-    answer = process_question_with_nlp(text, question)
 
+    # nodes = SentenceSplitter().get_nodes_from_documents(document)
+
+
+    # # Specify the Hugging Face model name
+    # embedding_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
+
+    # docstore = SimpleDocumentStore()
+    # docstore.add_documents(nodes)
+
+    Settings.llm = HuggingFaceInferenceAPI(model_name="HuggingFaceH4/zephyr-7b-alpha", token=HF_TOKEN)
+    Settings.embed_model = HuggingFaceEmbedding(
+        model_name="BAAI/bge-small-en-v1.5"
+    )
+
+    document = Document(text=text)
+    
+    documents = SimpleDirectoryReader("./uploads").load_data()
+
+    # Create the index using the specified embedding model
+    index = VectorStoreIndex.from_documents([document])
+
+    
+
+    query_engine = index.as_query_engine()
+
+    answer = query_engine.query(question)
+    # Here, you would implement your NLP processing using LangChain or LlamaIndex
+    # question, pdf_text = process_question_with_nlp(text, question)  # Replace with actual NLP processing
+    print(answer)
     return {"answer": answer}
-
-# NLP processing function (mock)
-def process_question_with_nlp(text, question):
-    # Placeholder for NLP integration
-    return "This is a mock answer based on NLP processing."
-
-# Run the app
-# Use this command: uvicorn main:app --reload

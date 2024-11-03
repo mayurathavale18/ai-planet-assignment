@@ -45,11 +45,12 @@ const AskQuestion = () => {
     //   };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/ask_question", {
+      const response = await axios.post("http://127.0.0.1:8000/ask-question", {
         file_name: fileName,
         question: question,
       });
-      setAnswer(response.data.answer);
+      console.log(response.data.answer)
+      setAnswer(response.data.answer.response);
     } catch (error) {
       console.error("Error asking question:", error);
     } finally {
@@ -89,7 +90,7 @@ const AskQuestion = () => {
       {answer && (
         <div>
           <h3>Answer:</h3>
-          <p>{answer}</p>
+          <p>response : {[...answer]}</p>
         </div>
       )}
     </div>
