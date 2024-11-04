@@ -1,8 +1,0 @@
-admin743
-Kk1c3cvRZEvW46g2bcyY : stockholm
-J5VwSd4YALUJyOp5TmG1 : Mumbai
-
-
-connection command : 
-
-psql --host=my-postgres-db-2.c386mg88offv.ap-south-1.rds.amazonaws.com --port=5432 --username=admin743 --password --dbname=my-postgres-db-2 
