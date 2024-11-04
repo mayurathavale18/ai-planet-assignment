@@ -157,11 +157,7 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
 from llama_index.core import VectorStoreIndex
-from llama_index.core.storage.docstore import SimpleDocumentStore
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import SimpleDirectoryReader
 from llama_index.core import Settings
-from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
 from llama_index.core.schema import Document
