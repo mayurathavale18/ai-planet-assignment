@@ -1,3 +1,1 @@
-backend/.env
-s3-file-uploader_accessKeys.csv
-backend/uploads
+backend/.envmake 
