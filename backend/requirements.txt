@@ -161,3 +161,5 @@ watchfiles==0.24.0
 websockets==13.1
 wrapt==1.16.0
 yarl==1.17.1
+uvicorn==0.32.0  # or any version you need
+
