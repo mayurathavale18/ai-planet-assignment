@@ -160,6 +160,7 @@ from llama_index.core import VectorStoreIndex
 from llama_index.core import Settings
 from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.schema import Document
 
 # Load environment variables
@@ -170,7 +171,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Allow your frontend URL
+    allow_origins=["*"],  # Allow your frontend URL
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
