@@ -45,7 +45,7 @@ const AskQuestion = () => {
     //   };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/ask-question", {
+      const response = await axios.post("http://0.0.0.0/ask-question", {
         file_name: fileName,
         question: question,
       });
