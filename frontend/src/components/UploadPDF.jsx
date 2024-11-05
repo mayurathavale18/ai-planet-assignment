@@ -15,7 +15,7 @@ const UploadPDF = () => {
         formData.append('file', file);
 
         try {
-            const res = await axios.post("http://0.0.0.0/upload-pdf", formData);
+            const res = await axios.post("http://13.233.68.186:8000/upload-pdf", formData);
             setResponse(res.data);
         } catch (error) {
             console.error("Error uploading PDF:", error);
