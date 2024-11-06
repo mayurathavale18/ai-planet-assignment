@@ -90,7 +90,7 @@ const AskQuestion = () => {
       {answer && (
         <div>
           <h3>Answer:</h3>
-          <p>response : {[...answer]}</p>
+          <p>response : {answer}</p>
         </div>
       )}
     </div>
