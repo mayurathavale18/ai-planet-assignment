@@ -240,7 +240,7 @@ async def ask_question(request_data: AskQuestionRequest):
     file_name = request_data.file_name
     question = request_data.question
 
-    # Retrieve PDF from S3
+    # Retrieve PDF from S3  
     try:
         s3_response = s3_client.get_object(Bucket=BUCKET_NAME, Key=file_name)
         pdf_content = s3_response['Body'].read()
@@ -250,9 +250,9 @@ async def ask_question(request_data: AskQuestionRequest):
 
     # Extract text from PDF
     pdf_text = ""
-    with open("temp.pdf", "wb") as temp_pdf:
+    with open(file_name, "wb") as temp_pdf:
         temp_pdf.write(pdf_content)
-    with open("temp.pdf", "rb") as temp_pdf:
+    with open(file_name, "rb") as temp_pdf:
         reader = PyPDF2.PdfReader(temp_pdf)
         for page in reader.pages:
             pdf_text += page.extract_text() or ""
