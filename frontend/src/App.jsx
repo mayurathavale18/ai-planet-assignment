@@ -1,6 +1,6 @@
 import React from 'react';
 import UploadPDF from './components/UploadPDF';
-import AskQuestion from './components/AskQuestion';
+import './App.css';
 
 function App() {
     return (
