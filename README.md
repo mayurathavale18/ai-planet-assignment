@@ -129,5 +129,3 @@ This is a full-stack application that allows users to upload PDF files, ask ques
 - **Comprehensive Logging**: Maintains logs with traceability for issues.
 
 ---
-
-This README provides a full overview and setup guide for deploying the PDF question-answering app. Let me know if you need any last-minute changes!
