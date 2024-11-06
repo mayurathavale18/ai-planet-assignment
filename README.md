@@ -127,5 +127,3 @@ This is a full-stack application that allows users to upload PDF files, ask ques
 - **Enhanced Security**: Sanitizes inputs to prevent SQL injection and XSS attacks.
 - **User Sessions**: Added support for storing recent activities.
 - **Comprehensive Logging**: Maintains logs with traceability for issues.
-
----
