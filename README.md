@@ -1,7 +1,3 @@
-Here's a `README.md` for your project with all the required documentation, additional features, a step-by-step usage guide on the frontend, and comprehensive error handling.
-
----
-
 # PDF Question-Answering Application
 
 This is a full-stack application that allows users to upload PDF files, ask questions related to the content, and receive accurate answers. Built with FastAPI, LangChain or LlamaIndex, React.js, AWS S3, and PyMuPDF, this app uses a FastAPI backend for PDF handling and question-answering functionalities, and a Vite-powered React frontend.
