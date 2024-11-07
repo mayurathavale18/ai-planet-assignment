@@ -143,9 +143,9 @@
 
 #     return {"answer": answer}
 
-from pydantic import BaseModel
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -155,10 +155,12 @@ import boto3
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from functools import lru_cache
+import io
+from typing import List
 
 from llama_index.core import VectorStoreIndex
 from llama_index.core import Settings
-from llama_index.llms.huggingface import HuggingFaceLLM
 from llama_index.llms.huggingface_api import HuggingFaceInferenceAPI
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.schema import Document
@@ -227,20 +229,22 @@ async def upload_pdf(file: UploadFile = File(...)):
     db.add(pdf_metadata)
     db.commit()
     db.refresh(pdf_metadata)
-    
+
     return {"file_name": pdf_metadata.file_name, "upload_date": pdf_metadata.upload_date}
 
 class AskQuestionRequest(BaseModel):
-    file_name: str
     question: str
 
-# Endpoint to ask questions
-@app.post("/ask-question")
-async def ask_question(request_data: AskQuestionRequest):
-    file_name = request_data.file_name
-    question = request_data.question
+# Dependency to retrieve the list of file names from the database
+def get_file_names() -> List[str]:
+    db = SessionLocal()
+    file_names = db.query(PDFMetadata.file_name).all()
+    return [f[0] for f in file_names]
 
-    # Retrieve PDF from S3  
+# LRU cache for responses
+@lru_cache(maxsize=50)
+def get_answer_in_memory(file_name: str, question: str):
+    # Retrieve PDF from S3
     try:
         s3_response = s3_client.get_object(Bucket=BUCKET_NAME, Key=file_name)
         pdf_content = s3_response['Body'].read()
@@ -248,27 +252,40 @@ async def ask_question(request_data: AskQuestionRequest):
         print(f"S3 retrieval error: {e}")
         raise HTTPException(status_code=404, detail="PDF not found in S3.")
 
-    # Extract text from PDF
+    # Extract text from PDF in memory
     pdf_text = ""
-    with open(file_name, "wb") as temp_pdf:
-        temp_pdf.write(pdf_content)
-    with open(file_name, "rb") as temp_pdf:
-        reader = PyPDF2.PdfReader(temp_pdf)
-        for page in reader.pages:
-            pdf_text += page.extract_text() or ""
+    pdf_stream = PyPDF2.PdfReader(io.BytesIO(pdf_content))
+    for page in pdf_stream.pages:
+        pdf_text += page.extract_text() or ""
 
-    # Load the PDF text as a document
+    # Load the PDF text as a document (context)
     document = Document(text=pdf_text)
 
     # Set up the Hugging Face embedding and language model
     Settings.llm = HuggingFaceInferenceAPI(model_name="HuggingFaceH4/zephyr-7b-alpha", token=HF_TOKEN)
     Settings.embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
 
-    # Create the index using the embedding model
+    # Create the index directly in memory without saving any output to S3
     index = VectorStoreIndex.from_documents([document])
     query_engine = index.as_query_engine()
 
     # Perform the query
     answer = query_engine.query(question)
-    print(answer)
+
+    return answer
+
+# Endpoint to ask questions
+@app.post("/ask-question")
+async def ask_question(
+    request_data: AskQuestionRequest, 
+    file_names: list = Depends(get_file_names)
+):
+    if not file_names:
+        raise HTTPException(status_code=404, detail="No files found in the database.")
+    
+    # Answer the question based on the latest uploaded PDF
+    answer = get_answer_in_memory(file_names[-1], request_data.question)
+    if not answer:
+        return {"answer": "No answer found."}
+    
     return {"answer": answer}
