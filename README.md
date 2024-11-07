@@ -1,7 +1,3 @@
-Certainly! Here’s a structured and professional README for your PDF question-answering app. This document outlines the project’s purpose, setup instructions, usage, and technical details in a clear and sophisticated manner.
-
----
-
 # PDF Question-Answering Application
 
 ## Overview
