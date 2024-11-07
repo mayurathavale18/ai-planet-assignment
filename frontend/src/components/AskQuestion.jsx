@@ -22,7 +22,7 @@ const AskQuestion = ({
     }
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/ask-question", {
+      const response = await axios.post("http://13.233.68.186:8000/ask-question", {
         question,
         file_name: uploadedFileName,
       });

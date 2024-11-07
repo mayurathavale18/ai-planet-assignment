@@ -31,7 +31,7 @@ const UploadPDF = ({ setUploadedFileName, resetFileState }) => {
       formData.append("file", file);
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/upload-pdf",
+        "http://13.233.68.186:8000/upload-pdf",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
